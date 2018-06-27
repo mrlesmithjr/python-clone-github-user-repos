@@ -92,15 +92,25 @@ for repo in repos:
         git.Repo.clone_from(repo.ssh_url, repo_dest)
     else:
         logger.info("%s already exists, skipping clone action..." % repo_dest)
-        repo = git.Repo(repo_dest)
+        git_repo = git.Repo(repo_dest)
         logger.info("Checking Git status...")
-        changed_files = repo.index.diff(None)
+        changed_files = git_repo.index.diff(None)
         if changed_files != []:
             for changed_file in changed_files:
                 logger.warning("%s has been modified in %s" % (changed_file.a_path, repo_dest))
-        untracked_files = repo.untracked_files
+        untracked_files = git_repo.untracked_files
         if untracked_files != []:
             logger.warning("The following untracked files %s were found in %s" % (untracked_files, repo_dest))
+        origin = git_repo.remotes.origin
+        try:
+            fetch_origin = origin.fetch()[0]
+            if fetch_origin.flags == 4:
+                logger.info("No pending changes found in GitHub repo: %s" % repo.name)
+            else:
+                logger.warning("Pending changes found in GitHub repo: %s" % repo.name)
+        except:
+            logger.error("Fetching updates for repo: %s failed.." % repo.name)
+
 
 # Capture all directories in your local_repos_dir
 directories = os.listdir(local_repos_dir)
