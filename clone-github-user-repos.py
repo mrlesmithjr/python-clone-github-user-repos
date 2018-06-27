@@ -102,14 +102,18 @@ for repo in repos:
         if untracked_files != []:
             logger.warning("The following untracked files %s were found in %s" % (untracked_files, repo_dest))
         origin = git_repo.remotes.origin
-        try:
-            fetch_origin = origin.fetch()[0]
-            if fetch_origin.flags == 4:
-                logger.info("No pending changes found in GitHub repo: %s" % repo.name)
-            else:
-                logger.warning("Pending changes found in GitHub repo: %s" % repo.name)
-        except:
-            logger.error("Fetching updates for repo: %s failed.." % repo.name)
+        if "github.com" in origin.url:
+            try:
+                fetch_origin = origin.fetch()[0]
+                if fetch_origin.flags == 4:
+                    logger.info("GitHub repo: %s origin remote is: %s" % (repo.name, origin.url))
+                    logger.info("No pending changes found in GitHub repo: %s" % repo.name)
+                else:
+                    logger.warning("Pending changes found in GitHub repo: %s" % repo.name)
+            except:
+                logger.error("Fetching updates for repo: %s failed.." % repo.name)
+        else:
+            logger.warning("Repo: %s remote origin is not using GitHub." % repo.name)
 
 
 # Capture all directories in your local_repos_dir
