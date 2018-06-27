@@ -47,7 +47,10 @@ repos = gh.repos.list().all()
 # Iterate through list of users repositories and clone them
 for repo in repos:
     repo_dest = "%s/%s" % (local_repos_dir, repo.name)
-    logging.info("Cloning %s to %s" % (repo.name, repo_dest))
-    Repo.clone_from(repo.ssh_url, repo_dest)
+    if not os.path.exists(repo_dest):
+        logging.info("Cloning %s to %s" % (repo.name, repo_dest))
+        Repo.clone_from(repo.ssh_url, repo_dest)
+    else:
+        logging.info("%s already exists, skipping..." % repo_dest)
 
 
