@@ -93,7 +93,7 @@ for repo in repos:
     else:
         logger.info("%s already exists, skipping clone action..." % repo_dest)
         git_repo = git.Repo(repo_dest)
-        logger.info("Checking Git status...")
+        logger.info("Checking Git status for repo: %s" % repo.name)
         changed_files = git_repo.index.diff(None)
         if changed_files != []:
             for changed_file in changed_files:
