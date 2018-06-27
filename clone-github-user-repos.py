@@ -91,7 +91,16 @@ for repo in repos:
         logger.info("Cloning %s to %s" % (repo.name, repo_dest))
         git.Repo.clone_from(repo.ssh_url, repo_dest)
     else:
-        logger.info("%s already exists, skipping..." % repo_dest)
+        logger.info("%s already exists, skipping clone action..." % repo_dest)
+        repo = git.Repo(repo_dest)
+        logger.info("Checking Git status...")
+        changed_files = repo.index.diff(None)
+        if changed_files != []:
+            for changed_file in changed_files:
+                logger.warning("%s has been modified in %s" % (changed_file.a_path, repo_dest))
+        untracked_files = repo.untracked_files
+        if untracked_files != []:
+            logger.warning("The following untracked files %s were found in %s" % (untracked_files, repo_dest))
 
 # Capture all directories in your local_repos_dir
 directories = os.listdir(local_repos_dir)
