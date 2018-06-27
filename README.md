@@ -21,6 +21,14 @@ user = mygithubusername
 token = mysupersecrettoken
 ```
 
+### Required Python Libraries
+
+Install the required Python libraries by executing:
+
+```bash
+pip install -r requirements.txt
+```
+
 ## Execution
 
 ```bash

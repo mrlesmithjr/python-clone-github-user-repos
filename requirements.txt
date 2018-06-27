@@ -1,0 +1,4 @@
+pygithub3
+ConfigParser
+GitPython
+logging
