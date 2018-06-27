@@ -35,6 +35,11 @@ pip install -r requirements.txt
 python clone-github-user-repos.py
 ```
 
+## Logging
+
+Logging has been implemented in order to easily review what was found. The log
+by default is `clone-github-user-repos.log` which is also added to [.gitignore](.gitignore).
+
 ## License
 
 MIT
