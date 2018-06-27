@@ -6,6 +6,7 @@ from ConfigParser import SafeConfigParser
 import git
 import logging
 import os
+import sys
 
 __author__ = "Larry Smith Jr."
 __email___ = "mrlesmithjr@gmail.com"
@@ -14,10 +15,42 @@ __status__ = "Development"
 # http://everythingshouldbevirtual.com
 # @mrlesmithjr
 
-logging_format = "%(levelname)s: %(message)s"
-logging.basicConfig(level=logging.INFO, format=logging_format)
+# Defines the log file name and location of where to log to
+LOG_FILE = "clone-github-user-repos.log"
 
+console_logging_format = "%(levelname)s: %(message)s"
+file_logging_format = "%(levelname)s: %(asctime)s: %(message)s"
+
+# Configuring logger
+logging.basicConfig(level=logging.INFO, format=console_logging_format)
 logger = logging.getLogger(__name__)
+
+# Capture directory name of log file
+LOG_FILE_DIR = os.path.dirname(LOG_FILE)
+
+# Check if log file directory name is in the current folder
+if os.path.isdir("./" + LOG_FILE_DIR):
+    LOG = "./" + LOG_FILE
+# Check if log file directory name is in the parent folder
+elif os.path.isdir("../" + LOG_FILE_DIR):
+    LOG = "../" + LOG_FILE
+# Error out and exit if log file directory name is not found
+else:
+    logging.error("%s not found, please fix LOG_FILE variable!" % LOG_FILE)
+    sys.exit(0)
+
+# Creating file handler for output file
+handler = logging.FileHandler(LOG)
+
+# Configuring logging level for log file
+handler.setLevel(logging.INFO)
+
+# Configuring logging format for log file
+formatter = logging.Formatter(file_logging_format)
+handler.setFormatter(formatter)
+
+# Adding handlers to the logger
+logger.addHandler(handler)
 
 # Defines users home directory
 user_home = expanduser("~")
@@ -75,7 +108,7 @@ for directory in directories:
 
 # If missing_repos is not empty iterate through
 if missing_repos != []:
-    logger.warning("\nThe following directories found in %s are missing from GitHub." % local_repos_dir)
+    logger.warning("The following directories found in %s are missing from GitHub." % local_repos_dir)
     for missing_repo in missing_repos:
         dir_path = "%s/%s" % (local_repos_dir, missing_repo)
         try:
