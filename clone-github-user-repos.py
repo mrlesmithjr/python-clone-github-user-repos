@@ -62,6 +62,9 @@ parser.read('github.cfg')
 gh_user = parser.get('github', 'user')
 gh_user_token = parser.get('github', 'token')
 
+# Before fetching, remove any remote-tracking references that no longer exist on the remote.
+git_fetch_prune = True
+
 # Define where to clone repos to locally
 local_repos_dir = "%s/Git_Projects/Personal/GitHub/%s" % (user_home, gh_user)
 
@@ -133,7 +136,7 @@ for repo in repos:
         if github_origin:
             try:
                 logger.info("Checking for pending changes on GitHub for repo %s" % repo.name)
-                fetch_origin = origin.fetch()[0]
+                fetch_origin = origin.fetch(prune=git_fetch_prune)[0]
                 if fetch_origin.flags == 4:
                     logger.info("No pending changes found on GitHub for repo %s" % repo.name)
                 else:
