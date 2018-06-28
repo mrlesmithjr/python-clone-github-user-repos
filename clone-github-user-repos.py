@@ -65,19 +65,26 @@ gh_user_token = parser.get('github', 'token')
 # Define where to clone repos to locally
 local_repos_dir = "%s/Git_Projects/Personal/GitHub/%s" % (user_home, gh_user)
 
+logger.info("Starting...")
+
 # Check for destination to save repositories to
+logger.info("Checking to ensure %s exists." % local_repos_dir)
 if not os.path.exists(local_repos_dir):
-    logger.info("%s is missing, creating..." % local_repos_dir)
+    logger.info("%s not found, creating..." % local_repos_dir)
     os.makedirs(local_repos_dir)
-    logger.info("%s has been created." % local_repos_dir)
+    logger.info("%s has been successfully created." % local_repos_dir)
 else:
     logger.info("%s found, skipping creation." % local_repos_dir)
 
 # Authenticate
+logger.info("Authenticating with GitHub API.")
 gh = Github(user=gh_user, token=gh_user_token)
+logger.info("Successfully authenticated with GitHub API.")
 
 # List all of users repositories
+logger.info("Capturing all of users repos from GitHub.")
 repos = gh.repos.list().all()
+logger.info("All of users repos have been successfully captured.")
 
 # Setup list to collect repo names for further checking if directories are in your
 # local_repos_dir directory that are not in your GitHub repo list
@@ -85,39 +92,60 @@ repo_names = []
 
 # Iterate through list of users repositories and clone them
 for repo in repos:
+    logger.info("Processing repo %s ..." % repo.name)
     repo_names.append(repo.name)
     repo_dest = "%s/%s" % (local_repos_dir, repo.name)
     if not os.path.exists(repo_dest):
-        logger.info("Cloning %s to %s" % (repo.name, repo_dest))
+        logger.info("Repo %s not found locally." % repo.name)
+        logger.info("Cloning repo %s locally." % repo.name)
         git.Repo.clone_from(repo.ssh_url, repo_dest)
+        logger.info("Repo %s successfully cloned locally." % repo.name)
     else:
-        logger.info("%s already exists, skipping clone action..." % repo_dest)
+        logger.info("Repo %s already exists locally, skipping clone." % repo.name)
         git_repo = git.Repo(repo_dest)
-        logger.info("Checking Git status for repo: %s" % repo.name)
+        logger.info("Checking for locally changed files for repo %s" % repo.name)
         changed_files = git_repo.index.diff(None)
         if changed_files != []:
+            logger.warning("Changed files for repo %s found..." % repo.name)
             for changed_file in changed_files:
-                logger.warning("%s has been modified in %s" % (changed_file.a_path, repo_dest))
+                logger.warning("%s has been modified locally in repo %s" % (changed_file.a_path, repo.name))
+        else:
+            logger.info("No changed files were found locally for repo %s" % repo.name)
+        logger.info("Checking for untracked files locally for repo %s" % repo.name)
         untracked_files = git_repo.untracked_files
         if untracked_files != []:
-            logger.warning("The following untracked files %s were found in %s" % (untracked_files, repo_dest))
+            logger.warning("Untracked files for repo %s found..." % repo.name)
+            for untracked_file in untracked_files:
+                logger.warning("%s is untracked locally in repo %s" % (untracked_file, repo.name))
+        else:
+            logger.info("No untracked files found for repo %s" % repo.name)
+        logger.info("Capturing repo %s origin remote." % repo.name)
         origin = git_repo.remotes.origin
+        logger.info("Repo %s origin remote captured successfully." % repo.name)
+        logger.info("Validating repo %s origin remote is GitHub." % repo.name)
         if "github.com" in origin.url:
+            logger.info("Repo %s origin remote validated successfully." % repo.name)
+            github_origin = True
+        else:
+            logger.error("Repo %s origin remote validation failed." % repo.name)
+            logger.info("Repo %s origin remote is %s" % (repo.name, origin.url))
+            github_origin = False
+        if github_origin:
             try:
+                logger.info("Checking for pending changes on GitHub for repo %s" % repo.name)
                 fetch_origin = origin.fetch()[0]
                 if fetch_origin.flags == 4:
-                    logger.info("GitHub repo: %s origin remote is: %s" % (repo.name, origin.url))
-                    logger.info("No pending changes found in GitHub repo: %s" % repo.name)
+                    logger.info("No pending changes found on GitHub for repo %s" % repo.name)
                 else:
-                    logger.warning("Pending changes found in GitHub repo: %s" % repo.name)
+                    logger.warning("Pending changes found on GitHub for repo %s" % repo.name)
             except:
-                logger.error("Fetching updates for repo: %s failed.." % repo.name)
-        else:
-            logger.warning("Repo: %s remote origin is not using GitHub." % repo.name)
+                logger.error("Check for pending changes on GitHub for repo %s failed." % repo.name)
 
 
 # Capture all directories in your local_repos_dir
+logger.info("Capturing list of directories in %s" % local_repos_dir)
 directories = os.listdir(local_repos_dir)
+logger.info("List of directories in %s completed successfully." % local_repos_dir)
 
 # Setup list to collect repo directories found that are not in your GitHub repo list
 missing_repos = []
@@ -134,6 +162,7 @@ if missing_repos != []:
     logger.warning("The following directories found in %s are missing from GitHub." % local_repos_dir)
     for missing_repo in missing_repos:
         dir_path = "%s/%s" % (local_repos_dir, missing_repo)
+        logger.warning("Directory %s was not found on GitHub." % dir_path)
         try:
             git.Repo(dir_path).git_dir
             git_repo = True
@@ -142,6 +171,9 @@ if missing_repos != []:
         if git_repo:
             repo = git.Repo(dir_path)
             remotes = repo.remotes
-            logger.warning("Repo: %s Git_Repo: %s Remotes: %s" % (dir_path, git_repo, remotes))
+            logger.info("Directory %s is configured as a git repo." % dir_path)
+            logger.info("Directory %s is configured with the following git remotes %s" %(dir_path, remotes))
         else:
-            logger.warning("Repo: %s Git_Repo: %s" % (dir_path, git_repo))
+            logger.info("Directory %s is not configured as a git repo." % dir_path)
+
+logger.info("Finished...")
