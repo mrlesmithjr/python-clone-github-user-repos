@@ -16,6 +16,8 @@ __status__ = "Development"
 # http://everythingshouldbevirtual.com
 # @mrlesmithjr
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Defines the log file name and location of where to log to
 LOG_FILE = "clone-github-user-repos.log"
 
@@ -26,19 +28,11 @@ FILE_LOGGING_FORMAT = "%(levelname)s: %(asctime)s: %(message)s"
 logging.basicConfig(level=logging.INFO, format=CONSOLE_LOGGING_FORMAT)
 LOGGER = logging.getLogger(__name__)
 
-# Capture directory name of log file
-LOG_FILE_DIR = os.path.dirname(LOG_FILE)
+LOG_FILE_DIR = os.path.join(SCRIPT_DIR, 'logging')
+if not os.path.exists(LOG_FILE_DIR):
+    os.makedirs(LOG_FILE_DIR)
 
-# Check if log file directory name is in the current folder
-if os.path.isdir("./" + LOG_FILE_DIR):
-    LOG = "./" + LOG_FILE
-# Check if log file directory name is in the parent folder
-elif os.path.isdir("../" + LOG_FILE_DIR):
-    LOG = "../" + LOG_FILE
-# Error out and exit if log file directory name is not found
-else:
-    logging.error("%s not found, please fix LOG_FILE variable!", LOG_FILE)
-    sys.exit(0)
+LOG = os.path.join(LOG_FILE_DIR, LOG_FILE)
 
 # Creating file handler for output file
 HANDLER = logging.FileHandler(LOG)
@@ -68,7 +62,8 @@ GH_USER_TOKEN = PARSER.get('github', 'token')
 GIT_FETCH_PRUNE = True
 
 # Define where to clone repos to locally
-LOCAL_REPOS_DIR = "%s/Git_Projects/Personal/GitHub/%s" % (USER_HOME, GH_USER)
+LOCAL_REPOS_DIR = os.path.join(
+    USER_HOME, 'Git_Projects', 'Personal', 'GitHub', GH_USER)
 
 LOGGER.info("Starting...")
 
@@ -99,7 +94,7 @@ REPO_NAMES = []
 for repo in REPOS:
     LOGGER.info("Processing repo %s ...", repo.name)
     REPO_NAMES.append(repo.name)
-    repo_dest = "%s/%s" % (LOCAL_REPOS_DIR, repo.name)
+    repo_dest = os.path.join(LOCAL_REPOS_DIR, repo.name)
     if not os.path.exists(repo_dest):
         LOGGER.info("Repo %s not found locally.", repo.name)
         LOGGER.info("Cloning repo %s locally.", repo.name)
@@ -176,7 +171,7 @@ MISSING_REPOS = []
 # Iterate through list of directories captured in your local_repos_dir
 for directory in DIRECTORIES:
     if directory not in REPO_NAMES:
-        dir_path = "%s/%s" % (LOCAL_REPOS_DIR, directory)
+        dir_path = os.path.join(LOCAL_REPOS_DIR, directory)
         if os.path.isdir(dir_path):
             MISSING_REPOS.append(directory)
 
@@ -186,7 +181,7 @@ if MISSING_REPOS != []:
         "The following directories found in %s are missing from GitHub.",
         LOCAL_REPOS_DIR)
     for missing_repo in MISSING_REPOS:
-        dir_path = "%s/%s", LOCAL_REPOS_DIR, missing_repo
+        dir_path = os.path.join(LOCAL_REPOS_DIR, missing_repo)
         LOGGER.warning("Directory %s was not found on GitHub.", dir_path)
         try:
             git.Repo(dir_path).git_dir

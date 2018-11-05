@@ -1,4 +1,4 @@
-github.cfg
-clone-github-user-repos.log
-venv/
 .vscode/
+github.cfg
+logging/
+venv/
