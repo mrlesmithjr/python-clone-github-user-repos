@@ -6,14 +6,6 @@ can help you out.
 
 ## Requirements
 
-### Python2
-
-```bash
-virtualenv -p python2 venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
 ### GitHub User Token
 
 You will need to create a [personal access token](https://github.com/settings/tokens)
@@ -31,9 +23,11 @@ token = mysupersecrettoken
 
 ### Required Python Libraries
 
-Install the required Python libraries by executing:
+Install the required Python2 libraries by executing:
 
 ```bash
+virtualenv -p python2 venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
