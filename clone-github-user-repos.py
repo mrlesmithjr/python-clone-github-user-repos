@@ -6,7 +6,7 @@ from os.path import expanduser
 from configparser import SafeConfigParser
 import logging
 import sys
-from pygithub import Github
+from pygithub3 import Github
 import git
 
 __author__ = "Larry Smith Jr."
