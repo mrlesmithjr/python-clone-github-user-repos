@@ -26,7 +26,7 @@ token = mysupersecrettoken
 Install the required Python2 libraries by executing:
 
 ```bash
-virtualenv -p python2 venv
+python2.7 -m virtualenv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
